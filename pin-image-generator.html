@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>The Golden Routine – Pin Generator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --gold: #C8960C; --gold-light: #F0C040; --gold-pale: #FDF6E3;
+    --green: #4a7c3f; --dark: #2C1A00; --mid: #8B6914;
+    --border: #E8D9B0; --shadow: 0 2px 20px rgba(44,26,0,0.09);
+  }
+  body { font-family: 'Inter', sans-serif; background: #F0EAD6; min-height: 100vh; padding-bottom: 60px; }
+  header { background: var(--dark); padding: 16px 20px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10; }
+  .logo { font-family: 'Playfair Display', serif; color: var(--gold-light); font-size: 17px; }
+  .logo span { color: var(--green); letter-spacing: 3px; font-size: 10px; display: block; font-family: 'Inter', sans-serif; font-weight: 500; }
+  .sun-icon { width: 30px; height: 30px; background: var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .container { max-width: 700px; margin: 0 auto; padding: 0 16px; }
+  .card { background: #fff; border-radius: 18px; border: 1px solid var(--border); padding: 24px; margin-top: 20px; box-shadow: var(--shadow); }
+  .card-title { font-family: 'Playfair Display', serif; font-size: 19px; color: var(--dark); margin-bottom: 4px; }
+  .card-sub { font-size: 12px; color: var(--mid); margin-bottom: 20px; line-height: 1.6; }
+  label { display: block; font-size: 11px; font-weight: 600; color: var(--mid); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+  input, textarea, select { width: 100%; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 14px; color: var(--dark); background: var(--gold-pale); outline: none; transition: border 0.2s; margin-bottom: 16px; }
+  input:focus, textarea:focus, select:focus { border-color: var(--gold); background: #fff; }
+  input[type=password] { letter-spacing: 2px; }
+  textarea { resize: vertical; min-height: 80px; }
+
+  /* Upload slots */
+  .upload-slots { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+  .upload-slot { border: 2px dashed var(--border); border-radius: 12px; background: var(--gold-pale); overflow: hidden; position: relative; min-height: 100px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: border-color 0.2s; }
+  .upload-slot:hover { border-color: var(--gold); }
+  .upload-slot.has-image { border-style: solid; border-color: var(--green); min-height: 0; }
+  .upload-slot input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .upload-slot img { width: 100%; max-height: 200px; object-fit: contain; display: block; }
+  .slot-placeholder { text-align: center; padding: 16px; pointer-events: none; }
+  .slot-placeholder .icon { font-size: 28px; margin-bottom: 6px; }
+  .slot-placeholder .slot-title { font-size: 13px; font-weight: 600; color: var(--dark); margin-bottom: 2px; }
+  .slot-placeholder .slot-sub { font-size: 11px; color: var(--mid); }
+  .slot-badge { position: absolute; top: 8px; left: 8px; background: var(--green); color: #fff; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; letter-spacing: 0.5px; }
+  .slot-clear { position: absolute; top: 8px; right: 8px; background: var(--dark); color: #fff; border: none; border-radius: 50%; width: 26px; height: 26px; cursor: pointer; font-size: 12px; display: none; align-items: center; justify-content: center; z-index: 2; }
+  .has-image .slot-clear { display: flex; }
+  .has-image .slot-placeholder { display: none; }
+  .add-more-btn { width: 100%; padding: 10px; border: 1.5px dashed var(--border); border-radius: 10px; background: transparent; font-size: 13px; color: var(--mid); cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; }
+  .add-more-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  .vibes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+  .vibe-btn { padding: 10px 6px; border: 1.5px solid var(--border); border-radius: 10px; background: var(--gold-pale); font-size: 12px; font-weight: 500; text-align: center; cursor: pointer; transition: all 0.15s; color: var(--dark); }
+  .vibe-btn.active { border-color: var(--green); background: #f0f7ee; color: var(--green); font-weight: 600; }
+
+  .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .btn-gold { background: var(--gold); color: #fff; }
+  .btn-gold:hover { background: #a87a0a; }
+  .btn-gold:disabled { background: #d4b96a; cursor: not-allowed; }
+  .btn-outline { background: transparent; border: 1.5px solid var(--gold); color: var(--gold); margin-top: 10px; }
+  .btn-outline:hover { background: var(--gold-pale); }
+
+  .spinner { display: inline-block; width: 15px; height: 15px; border: 2px solid rgba(255,255,255,0.35); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; margin-right: 8px; vertical-align: middle; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .alert { padding: 12px 16px; border-radius: 10px; font-size: 13px; margin-bottom: 16px; line-height: 1.5; }
+  .alert-info { background: #e8f4fd; color: #1a5276; border: 1px solid #aed6f1; }
+  .alert-success { background: #f0f7ee; color: #2d6a27; border: 1px solid #a9dfad; }
+  .alert-error { background: #fdf0f0; color: #922b21; border: 1px solid #f1948a; }
+
+  .img-wrap { width: 100%; aspect-ratio: 2/3; border-radius: 12px; border: 1.5px solid var(--border); background: var(--gold-pale); display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 14px; }
+  .img-wrap img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
+
+  .copy-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--mid); margin-bottom: 6px; }
+
+  .headline-box { background: linear-gradient(135deg, #2C1A00, #4a3000); border-radius: 12px; padding: 20px; margin-bottom: 16px; text-align: center; }
+  .headline-box .hl-label { font-size: 10px; color: var(--gold-light); letter-spacing: 2px; text-transform: uppercase; font-weight: 600; margin-bottom: 6px; }
+  .headline-box .hl-main { font-family: 'Playfair Display', serif; font-size: 22px; color: #fff; line-height: 1.3; margin-bottom: 12px; }
+  .headline-box .hl-sub { font-size: 13px; color: var(--gold-light); opacity: 0.85; margin-bottom: 14px; }
+  .hl-copy-btn { padding: 8px 20px; background: var(--gold); color: #fff; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; }
+
+  .results { display: none; }
+  .results.visible { display: block; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  .dl-btn { display: block; width: 100%; padding: 13px; background: var(--dark); color: var(--gold-light); border: none; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; text-align: center; cursor: pointer; text-decoration: none; margin-top: 10px; transition: background 0.2s; }
+  .dl-btn:hover { background: #4a3000; }
+
+  .keys-saved { display: none; padding: 10px 14px; background: #f0f7ee; border: 1px solid #a9dfad; border-radius: 10px; font-size: 12px; color: var(--green); font-weight: 500; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="sun-icon">☀️</div>
+  <div><div class="logo">The Golden Routine <span>PIN GENERATOR</span></div></div>
+</header>
+
+<div class="container">
+
+  <!-- API Keys -->
+  <div class="card">
+    <div class="card-title">API Keys</div>
+    <div class="card-sub">Saved in your browser for this session only.</div>
+    <div class="keys-saved" id="keysSaved">✅ Keys saved — ready to generate!</div>
+    <label>OpenAI API Key</label>
+    <input type="password" id="openaiKey" placeholder="sk-..."/>
+    <label>Anthropic API Key</label>
+    <input type="password" id="anthropicKey" placeholder="sk-ant-..."/>
+    <button class="btn btn-gold" onclick="saveKeys()">Save Keys</button>
+  </div>
+
+  <!-- Screenshots -->
+  <div class="card">
+    <div class="card-title">Amazon Screenshots</div>
+    <div class="card-sub">
+      Upload screenshots from the Amazon listing. The <strong>first image</strong> is used as the product reference for image generation. All images are read by Claude to extract the product title, features, and description automatically — no typing needed.
+    </div>
+
+    <label>Screenshots (upload 1–3)</label>
+    <div class="upload-slots" id="uploadSlots">
+      <div class="upload-slot" id="slot0">
+        <input type="file" accept="image/*" onchange="handleUpload(0, event)"/>
+        <div class="slot-badge">Product Photo</div>
+        <div class="slot-placeholder">
+          <div class="icon">📸</div>
+          <div class="slot-title">Screenshot 1 — Product photo + title</div>
+          <div class="slot-sub">Used for image generation reference</div>
+        </div>
+        <img id="slotImg0" src="" alt="" style="display:none"/>
+        <button class="slot-clear" onclick="clearSlot(0, event)">✕</button>
+      </div>
+
+      <div class="upload-slot" id="slot1">
+        <input type="file" accept="image/*" onchange="handleUpload(1, event)"/>
+        <div class="slot-badge">Description</div>
+        <div class="slot-placeholder">
+          <div class="icon">📄</div>
+          <div class="slot-title">Screenshot 2 — Description / bullet points</div>
+          <div class="slot-sub">Claude reads this for product details</div>
+        </div>
+        <img id="slotImg1" src="" alt="" style="display:none"/>
+        <button class="slot-clear" onclick="clearSlot(1, event)">✕</button>
+      </div>
+
+      <div class="upload-slot" id="slot2" style="display:none">
+        <input type="file" accept="image/*" onchange="handleUpload(2, event)"/>
+        <div class="slot-badge">Extra</div>
+        <div class="slot-placeholder">
+          <div class="icon">➕</div>
+          <div class="slot-title">Screenshot 3 — Any extra info</div>
+          <div class="slot-sub">Optional</div>
+        </div>
+        <img id="slotImg2" src="" alt="" style="display:none"/>
+        <button class="slot-clear" onclick="clearSlot(2, event)">✕</button>
+      </div>
+    </div>
+    <button class="add-more-btn" id="addMoreBtn" onclick="showThirdSlot()">+ Add a third screenshot</button>
+
+    <label style="margin-top:8px">Aesthetic Vibe</label>
+    <div class="vibes">
+      <div class="vibe-btn active" onclick="selectVibe(this, 'warm cozy home, soft natural lighting, styled home setting')">🏡 Cozy Home</div>
+      <div class="vibe-btn" onclick="selectVibe(this, 'bright summer outdoor lifestyle, golden hour sunshine')">☀️ Summer</div>
+      <div class="vibe-btn" onclick="selectVibe(this, 'fun mom life, family kitchen, cheerful and warm')">👨‍👩‍👧 Mom Life</div>
+      <div class="vibe-btn" onclick="selectVibe(this, 'minimal clean aesthetic, white marble, neutral tones')">✨ Minimal</div>
+      <div class="vibe-btn" onclick="selectVibe(this, 'cozy fall autumn, warm amber tones, pumpkins and leaves')">🍂 Fall</div>
+      <div class="vibe-btn" onclick="selectVibe(this, 'festive holiday christmas, fairy lights, cozy winter')">🎄 Holiday</div>
+    </div>
+
+    <label>Number of Images to Generate</label>
+    <select id="numImages">
+      <option value="1">1 image</option>
+      <option value="2">2 images</option>
+      <option value="3" selected>3 images (recommended)</option>
+    </select>
+
+    <button class="btn btn-gold" id="generateBtn" onclick="generateAll()">✨ Generate Images + Pin Copy</button>
+  </div>
+
+  <!-- Results -->
+  <div class="results" id="results">
+    <div id="statusAlert" class="alert alert-info" style="margin-top:16px;display:none"></div>
+    <div id="imagesSection"></div>
+
+    <div class="card" id="copyCard" style="display:none">
+      <div class="card-title">Pin Copy</div>
+      <div class="card-sub">Canva headline, Pinterest title, and description — all ready.</div>
+
+      <div class="copy-label">📐 Canva Text Overlay</div>
+      <div class="headline-box">
+        <div class="hl-label">Main Headline</div>
+        <div class="hl-main" id="headlineMain">—</div>
+        <div class="hl-label">Subheadline</div>
+        <div class="hl-sub" id="headlineSub">—</div>
+        <button class="hl-copy-btn" onclick="copyHeadline()">Copy Both Lines</button>
+      </div>
+
+      <hr class="divider"/>
+
+      <div class="copy-label">Pinterest Title</div>
+      <input type="text" id="pinTitle"/>
+
+      <div class="copy-label">Pinterest Description</div>
+      <textarea id="pinDescription" style="min-height:160px"></textarea>
+      <button class="btn btn-outline" onclick="copyDescription()">📋 Copy Description</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let keys = {};
+  let selectedVibe = 'warm cozy home, soft natural lighting, styled home setting';
+  let uploadedImages = [null, null, null]; // base64 strings
+
+  function saveKeys() {
+    const ok = document.getElementById('openaiKey').value.trim();
+    const ak = document.getElementById('anthropicKey').value.trim();
+    if (!ok || !ak) { alert('Please enter both API keys.'); return; }
+    keys = { openai: ok, anthropic: ak };
+    document.getElementById('keysSaved').style.display = 'block';
+    document.getElementById('openaiKey').value = '••••••••••••••••';
+    document.getElementById('anthropicKey').value = '••••••••••••••••';
+  }
+
+  function selectVibe(el, vibe) {
+    document.querySelectorAll('.vibe-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    selectedVibe = vibe;
+  }
+
+  function handleUpload(index, event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      uploadedImages[index] = e.target.result.split(',')[1];
+      const img = document.getElementById(`slotImg${index}`);
+      img.src = e.target.result;
+      img.style.display = 'block';
+      document.getElementById(`slot${index}`).classList.add('has-image');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function clearSlot(index, e) {
+    e.stopPropagation();
+    uploadedImages[index] = null;
+    const img = document.getElementById(`slotImg${index}`);
+    img.src = '';
+    img.style.display = 'none';
+    document.getElementById(`slot${index}`).classList.remove('has-image');
+    document.getElementById(`slot${index}`).querySelector('input[type=file]').value = '';
+  }
+
+  function showThirdSlot() {
+    document.getElementById('slot2').style.display = 'flex';
+    document.getElementById('addMoreBtn').style.display = 'none';
+  }
+
+  async function generateAll() {
+    if (!keys.openai || !keys.anthropic) { alert('Please save your API keys first.'); return; }
+    if (!uploadedImages[0]) { alert('Please upload at least the product photo screenshot.'); return; }
+
+    const btn = document.getElementById('generateBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Reading screenshots...';
+
+    document.getElementById('results').classList.add('visible');
+    document.getElementById('imagesSection').innerHTML = '';
+    document.getElementById('copyCard').style.display = 'none';
+    showStatus('info', '🔍 Claude is reading your Amazon screenshots...');
+
+    // Step 1: Claude reads ALL screenshots to extract product info
+    let claudeContent = [];
+    uploadedImages.forEach((img, i) => {
+      if (img) {
+        claudeContent.push({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: img } });
+      }
+    });
+    claudeContent.push({
+      type: 'text',
+      text: `You are a Pinterest content expert for "The Golden Routine" — a warm cozy lifestyle brand. 
+
+Analyze ALL the Amazon product screenshots provided and extract the product information. Then create Pinterest content.
+
+Return ONLY valid JSON, no markdown, no backticks:
+{
+  "product_name": "exact product name from the listing",
+  "visual_description": "detailed visual description of what the product looks like — colors, materials, shape, size, style — so an AI image generator can recreate it accurately in a lifestyle scene",
+  "key_features": "2-3 most compelling features in plain language",
+  "canva_headline": "bold 4-6 word headline for text overlay on the pin (punchy, scroll-stopping)",
+  "canva_subheadline": "6-10 word subheadline for smaller text below the headline",
+  "title": "Pinterest SEO title (max 8 words, keyword-rich, no hashtags)",
+  "description": "2-3 warm engaging sentences about why someone needs this product, naturally weaving in SEO keywords for Pinterest. End with: Affiliate link – shop it on Amazon! 🔗 Then add 6-8 relevant hashtags including #goldenroutine and #amazonfinds"
+}`
+    });
+
+    let productData;
+    try {
+      const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': keys.anthropic, 'anthropic-version': '2023-06-01' },
+        body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1500, messages: [{ role: 'user', content: claudeContent }] })
+      });
+      const claudeData = await claudeRes.json();
+      const raw = claudeData.content[0].text.replace(/```json|```/g, '').trim();
+      productData = JSON.parse(raw);
+    } catch(e) {
+      showStatus('error', '❌ Could not read screenshots. Check your Anthropic API key.');
+      resetBtn();
+      return;
+    }
+
+    const num = parseInt(document.getElementById('numImages').value);
+    showStatus('info', `🎨 Generating ${num} lifestyle image${num > 1 ? 's' : ''} with the actual product...`);
+    btn.innerHTML = `<span class="spinner"></span>Generating ${num} image${num > 1 ? 's' : ''}...`;
+
+    // Step 2: gpt-image-1 edits the product photo into a lifestyle scene
+    const imagePromises = Array.from({length: num}, async (_, i) => {
+      // Convert base64 to blob for FormData
+      const byteChars = atob(uploadedImages[0]);
+      const byteArr = new Uint8Array(byteChars.length);
+      for (let j = 0; j < byteChars.length; j++) byteArr[j] = byteChars.charCodeAt(j);
+      const blob = new Blob([byteArr], { type: 'image/jpeg' });
+
+      const formData = new FormData();
+      formData.append('image', blob, 'product.jpg');
+      formData.append('prompt', `Take this exact product — ${productData.visual_description} — and place it naturally into a beautiful Pinterest lifestyle scene. Style: ${selectedVibe}. The product must be clearly visible and recognizable. Soft natural lighting, warm tones, aspirational. Vertical composition. No text or words in the image.`);
+      formData.append('model', 'gpt-image-1');
+      formData.append('size', '1024x1536');
+
+      const res = await fetch('https://api.openai.com/v1/images/edits', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${keys.openai}` },
+        body: formData
+      });
+      return res.json();
+    });
+
+    try {
+      const results = await Promise.allSettled(imagePromises);
+      const section = document.getElementById('imagesSection');
+      section.innerHTML = '';
+      let count = 0;
+
+      results.forEach((result, i) => {
+        if (result.status === 'fulfilled' && result.value.data) {
+          count++;
+          const imgData = result.value.data[0];
+          // gpt-image-1 returns base64
+          const src = imgData.url || `data:image/png;base64,${imgData.b64_json}`;
+
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.style.marginTop = '16px';
+          card.innerHTML = `
+            <div class="copy-label">Image ${i + 1} of ${num}</div>
+            <div class="img-wrap"><img src="${src}" alt="Generated pin ${i+1}"/></div>
+            <a href="${src}" download="golden-routine-pin-${i+1}.png" class="dl-btn" target="_blank">⬇️ Download Image ${i+1}</a>
+          `;
+          section.appendChild(card);
+        }
+      });
+
+      if (count === 0) throw new Error('No images returned');
+
+    } catch(e) {
+      showStatus('error', '❌ Image generation failed. Make sure you have access to gpt-image-1 on your OpenAI account.');
+      resetBtn();
+      return;
+    }
+
+    // Step 3: Fill in copy
+    document.getElementById('headlineMain').textContent = productData.canva_headline;
+    document.getElementById('headlineSub').textContent = productData.canva_subheadline;
+    document.getElementById('pinTitle').value = productData.title;
+    document.getElementById('pinDescription').value = productData.description;
+    document.getElementById('copyCard').style.display = 'block';
+
+    showStatus('success', '✅ Done! Download your favorite image, add the Canva headline as a text overlay, and post!');
+    resetBtn();
+  }
+
+  function showStatus(type, msg) {
+    const el = document.getElementById('statusAlert');
+    el.style.display = 'block';
+    el.className = `alert alert-${type}`;
+    el.textContent = msg;
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function resetBtn() {
+    const btn = document.getElementById('generateBtn');
+    btn.disabled = false;
+    btn.innerHTML = '✨ Generate Images + Pin Copy';
+  }
+
+  async function copyHeadline() {
+    const h = document.getElementById('headlineMain').textContent;
+    const s = document.getElementById('headlineSub').textContent;
+    try {
+      await navigator.clipboard.writeText(`${h}\n${s}`);
+      event.target.textContent = '✅ Copied!';
+      setTimeout(() => event.target.textContent = 'Copy Both Lines', 2000);
+    } catch(e) { alert('Copy manually:\n' + h + '\n' + s); }
+  }
+
+  async function copyDescription() {
+    try {
+      await navigator.clipboard.writeText(document.getElementById('pinDescription').value);
+      event.target.textContent = '✅ Copied!';
+      setTimeout(() => event.target.textContent = '📋 Copy Description', 2000);
+    } catch(e) { alert('Please select and copy manually.'); }
+  }
+</script>
+</body>
+</html>
