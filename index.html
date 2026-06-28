@@ -27,7 +27,6 @@
   input[type=password] { letter-spacing: 2px; }
   textarea { resize: vertical; min-height: 80px; }
 
-  /* Upload slots */
   .upload-slots { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
   .upload-slot { border: 2px dashed var(--border); border-radius: 12px; background: var(--gold-pale); overflow: hidden; position: relative; min-height: 100px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: border-color 0.2s; }
   .upload-slot:hover { border-color: var(--gold); }
@@ -38,11 +37,11 @@
   .slot-placeholder .icon { font-size: 28px; margin-bottom: 6px; }
   .slot-placeholder .slot-title { font-size: 13px; font-weight: 600; color: var(--dark); margin-bottom: 2px; }
   .slot-placeholder .slot-sub { font-size: 11px; color: var(--mid); }
-  .slot-badge { position: absolute; top: 8px; left: 8px; background: var(--green); color: #fff; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; letter-spacing: 0.5px; }
+  .slot-badge { position: absolute; top: 8px; left: 8px; background: var(--green); color: #fff; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; }
   .slot-clear { position: absolute; top: 8px; right: 8px; background: var(--dark); color: #fff; border: none; border-radius: 50%; width: 26px; height: 26px; cursor: pointer; font-size: 12px; display: none; align-items: center; justify-content: center; z-index: 2; }
   .has-image .slot-clear { display: flex; }
   .has-image .slot-placeholder { display: none; }
-  .add-more-btn { width: 100%; padding: 10px; border: 1.5px dashed var(--border); border-radius: 10px; background: transparent; font-size: 13px; color: var(--mid); cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; }
+  .add-more-btn { width: 100%; padding: 10px; border: 1.5px dashed var(--border); border-radius: 10px; background: transparent; font-size: 13px; color: var(--mid); cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; margin-bottom: 16px; }
   .add-more-btn:hover { border-color: var(--gold); color: var(--gold); }
 
   .vibes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
@@ -78,10 +77,8 @@
   .results { display: none; }
   .results.visible { display: block; }
   .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
-
   .dl-btn { display: block; width: 100%; padding: 13px; background: var(--dark); color: var(--gold-light); border: none; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; text-align: center; cursor: pointer; text-decoration: none; margin-top: 10px; transition: background 0.2s; }
   .dl-btn:hover { background: #4a3000; }
-
   .keys-saved { display: none; padding: 10px 14px; background: #f0f7ee; border: 1px solid #a9dfad; border-radius: 10px; font-size: 12px; color: var(--green); font-weight: 500; margin-bottom: 16px; }
 </style>
 </head>
@@ -94,26 +91,20 @@
 
 <div class="container">
 
-  <!-- API Keys -->
   <div class="card">
-    <div class="card-title">API Keys</div>
-    <div class="card-sub">Saved in your browser for this session only.</div>
-    <div class="keys-saved" id="keysSaved">✅ Keys saved — ready to generate!</div>
+    <div class="card-title">OpenAI API Key</div>
+    <div class="card-sub">Used for both reading your screenshots and generating images. Stored in your browser only.</div>
+    <div class="keys-saved" id="keysSaved">✅ Key saved — ready to generate!</div>
     <label>OpenAI API Key</label>
     <input type="password" id="openaiKey" placeholder="sk-..."/>
-    <label>Anthropic API Key</label>
-    <input type="password" id="anthropicKey" placeholder="sk-ant-..."/>
-    <button class="btn btn-gold" onclick="saveKeys()">Save Keys</button>
+    <button class="btn btn-gold" onclick="saveKeys()">Save Key</button>
   </div>
 
-  <!-- Screenshots -->
   <div class="card">
     <div class="card-title">Amazon Screenshots</div>
-    <div class="card-sub">
-      Upload screenshots from the Amazon listing. The <strong>first image</strong> is used as the product reference for image generation. All images are read by Claude to extract the product title, features, and description automatically — no typing needed.
-    </div>
+    <div class="card-sub">Upload screenshots from the Amazon listing. The first image is used as the product reference for image generation. GPT-4o reads all screenshots to extract the product info automatically.</div>
 
-    <label>Screenshots (upload 1–3)</label>
+    <label>Screenshots (1–3)</label>
     <div class="upload-slots" id="uploadSlots">
       <div class="upload-slot" id="slot0">
         <input type="file" accept="image/*" onchange="handleUpload(0, event)"/>
@@ -121,24 +112,22 @@
         <div class="slot-placeholder">
           <div class="icon">📸</div>
           <div class="slot-title">Screenshot 1 — Product photo + title</div>
-          <div class="slot-sub">Used for image generation reference</div>
+          <div class="slot-sub">Used as visual reference for image generation</div>
         </div>
         <img id="slotImg0" src="" alt="" style="display:none"/>
         <button class="slot-clear" onclick="clearSlot(0, event)">✕</button>
       </div>
-
       <div class="upload-slot" id="slot1">
         <input type="file" accept="image/*" onchange="handleUpload(1, event)"/>
         <div class="slot-badge">Description</div>
         <div class="slot-placeholder">
           <div class="icon">📄</div>
           <div class="slot-title">Screenshot 2 — Description / bullet points</div>
-          <div class="slot-sub">Claude reads this for product details</div>
+          <div class="slot-sub">GPT-4o reads this for product details</div>
         </div>
         <img id="slotImg1" src="" alt="" style="display:none"/>
         <button class="slot-clear" onclick="clearSlot(1, event)">✕</button>
       </div>
-
       <div class="upload-slot" id="slot2" style="display:none">
         <input type="file" accept="image/*" onchange="handleUpload(2, event)"/>
         <div class="slot-badge">Extra</div>
@@ -153,7 +142,7 @@
     </div>
     <button class="add-more-btn" id="addMoreBtn" onclick="showThirdSlot()">+ Add a third screenshot</button>
 
-    <label style="margin-top:8px">Aesthetic Vibe</label>
+    <label>Aesthetic Vibe</label>
     <div class="vibes">
       <div class="vibe-btn active" onclick="selectVibe(this, 'warm cozy home, soft natural lighting, styled home setting')">🏡 Cozy Home</div>
       <div class="vibe-btn" onclick="selectVibe(this, 'bright summer outdoor lifestyle, golden hour sunshine')">☀️ Summer</div>
@@ -163,7 +152,7 @@
       <div class="vibe-btn" onclick="selectVibe(this, 'festive holiday christmas, fairy lights, cozy winter')">🎄 Holiday</div>
     </div>
 
-    <label>Number of Images to Generate</label>
+    <label>Number of Images</label>
     <select id="numImages">
       <option value="1">1 image</option>
       <option value="2">2 images</option>
@@ -173,11 +162,9 @@
     <button class="btn btn-gold" id="generateBtn" onclick="generateAll()">✨ Generate Images + Pin Copy</button>
   </div>
 
-  <!-- Results -->
   <div class="results" id="results">
     <div id="statusAlert" class="alert alert-info" style="margin-top:16px;display:none"></div>
     <div id="imagesSection"></div>
-
     <div class="card" id="copyCard" style="display:none">
       <div class="card-title">Pin Copy</div>
       <div class="card-sub">Canva headline, Pinterest title, and description — all ready.</div>
@@ -192,10 +179,8 @@
       </div>
 
       <hr class="divider"/>
-
       <div class="copy-label">Pinterest Title</div>
       <input type="text" id="pinTitle"/>
-
       <div class="copy-label">Pinterest Description</div>
       <textarea id="pinDescription" style="min-height:160px"></textarea>
       <button class="btn btn-outline" onclick="copyDescription()">📋 Copy Description</button>
@@ -205,18 +190,16 @@
 </div>
 
 <script>
-  let keys = {};
+  let apiKey = '';
   let selectedVibe = 'warm cozy home, soft natural lighting, styled home setting';
-  let uploadedImages = [null, null, null]; // base64 strings
+  let uploadedImages = [null, null, null];
 
   function saveKeys() {
-    const ok = document.getElementById('openaiKey').value.trim();
-    const ak = document.getElementById('anthropicKey').value.trim();
-    if (!ok || !ak) { alert('Please enter both API keys.'); return; }
-    keys = { openai: ok, anthropic: ak };
+    const k = document.getElementById('openaiKey').value.trim();
+    if (!k) { alert('Please enter your OpenAI API key.'); return; }
+    apiKey = k;
     document.getElementById('keysSaved').style.display = 'block';
     document.getElementById('openaiKey').value = '••••••••••••••••';
-    document.getElementById('anthropicKey').value = '••••••••••••••••';
   }
 
   function selectVibe(el, vibe) {
@@ -243,8 +226,7 @@
     e.stopPropagation();
     uploadedImages[index] = null;
     const img = document.getElementById(`slotImg${index}`);
-    img.src = '';
-    img.style.display = 'none';
+    img.src = ''; img.style.display = 'none';
     document.getElementById(`slot${index}`).classList.remove('has-image');
     document.getElementById(`slot${index}`).querySelector('input[type=file]').value = '';
   }
@@ -255,7 +237,7 @@
   }
 
   async function generateAll() {
-    if (!keys.openai || !keys.anthropic) { alert('Please save your API keys first.'); return; }
+    if (!apiKey) { alert('Please save your OpenAI API key first.'); return; }
     if (!uploadedImages[0]) { alert('Please upload at least the product photo screenshot.'); return; }
 
     const btn = document.getElementById('generateBtn');
@@ -265,45 +247,50 @@
     document.getElementById('results').classList.add('visible');
     document.getElementById('imagesSection').innerHTML = '';
     document.getElementById('copyCard').style.display = 'none';
-    showStatus('info', '🔍 Claude is reading your Amazon screenshots...');
+    showStatus('info', '🔍 GPT-4o is reading your Amazon screenshots...');
 
-    // Step 1: Claude reads ALL screenshots to extract product info
-    let claudeContent = [];
-    uploadedImages.forEach((img, i) => {
+    // Step 1: GPT-4o reads all screenshots and generates copy
+    const contentItems = [];
+    uploadedImages.forEach((img) => {
       if (img) {
-        claudeContent.push({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: img } });
+        contentItems.push({ type: 'image_url', image_url: { url: `data:image/jpeg;base64,${img}`, detail: 'high' } });
       }
     });
-    claudeContent.push({
+    contentItems.push({
       type: 'text',
-      text: `You are a Pinterest content expert for "The Golden Routine" — a warm cozy lifestyle brand. 
+      text: `You are a Pinterest content expert for "The Golden Routine" — a warm cozy lifestyle brand focused on home decor, mom life, family, and summer lifestyle.
 
-Analyze ALL the Amazon product screenshots provided and extract the product information. Then create Pinterest content.
+Analyze ALL the Amazon product screenshots and extract product information. Then create Pinterest content.
 
 Return ONLY valid JSON, no markdown, no backticks:
 {
   "product_name": "exact product name from the listing",
-  "visual_description": "detailed visual description of what the product looks like — colors, materials, shape, size, style — so an AI image generator can recreate it accurately in a lifestyle scene",
+  "visual_description": "detailed visual description of what the product looks like — colors, materials, shape, size, style — so an AI image generator can place this exact product into a lifestyle scene",
   "key_features": "2-3 most compelling features in plain language",
-  "canva_headline": "bold 4-6 word headline for text overlay on the pin (punchy, scroll-stopping)",
-  "canva_subheadline": "6-10 word subheadline for smaller text below the headline",
+  "canva_headline": "bold 4-6 word headline for Canva text overlay on the pin (punchy, scroll-stopping)",
+  "canva_subheadline": "6-10 word subheadline for smaller text below the main headline",
   "title": "Pinterest SEO title (max 8 words, keyword-rich, no hashtags)",
-  "description": "2-3 warm engaging sentences about why someone needs this product, naturally weaving in SEO keywords for Pinterest. End with: Affiliate link – shop it on Amazon! 🔗 Then add 6-8 relevant hashtags including #goldenroutine and #amazonfinds"
+  "description": "2-3 warm engaging sentences about why someone needs this product, naturally weaving in Pinterest SEO keywords. End with: Affiliate link – shop it on Amazon! 🔗 Then add 6-8 relevant hashtags including #goldenroutine and #amazonfinds"
 }`
     });
 
     let productData;
     try {
-      const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': keys.anthropic, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1500, messages: [{ role: 'user', content: claudeContent }] })
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+        body: JSON.stringify({
+          model: 'gpt-4o',
+          max_tokens: 1500,
+          messages: [{ role: 'user', content: contentItems }]
+        })
       });
-      const claudeData = await claudeRes.json();
-      const raw = claudeData.content[0].text.replace(/```json|```/g, '').trim();
+      const data = await res.json();
+      if (data.error) throw new Error(data.error.message);
+      const raw = data.choices[0].message.content.replace(/```json|```/g, '').trim();
       productData = JSON.parse(raw);
     } catch(e) {
-      showStatus('error', '❌ Could not read screenshots. Check your Anthropic API key.');
+      showStatus('error', `❌ Could not read screenshots: ${e.message}`);
       resetBtn();
       return;
     }
@@ -312,9 +299,8 @@ Return ONLY valid JSON, no markdown, no backticks:
     showStatus('info', `🎨 Generating ${num} lifestyle image${num > 1 ? 's' : ''} with the actual product...`);
     btn.innerHTML = `<span class="spinner"></span>Generating ${num} image${num > 1 ? 's' : ''}...`;
 
-    // Step 2: gpt-image-1 edits the product photo into a lifestyle scene
+    // Step 2: gpt-image-1 edits product photo into lifestyle scene
     const imagePromises = Array.from({length: num}, async (_, i) => {
-      // Convert base64 to blob for FormData
       const byteChars = atob(uploadedImages[0]);
       const byteArr = new Uint8Array(byteChars.length);
       for (let j = 0; j < byteChars.length; j++) byteArr[j] = byteChars.charCodeAt(j);
@@ -322,13 +308,13 @@ Return ONLY valid JSON, no markdown, no backticks:
 
       const formData = new FormData();
       formData.append('image', blob, 'product.jpg');
-      formData.append('prompt', `Take this exact product — ${productData.visual_description} — and place it naturally into a beautiful Pinterest lifestyle scene. Style: ${selectedVibe}. The product must be clearly visible and recognizable. Soft natural lighting, warm tones, aspirational. Vertical composition. No text or words in the image.`);
+      formData.append('prompt', `Take this exact product — ${productData.visual_description} — and place it naturally into a beautiful Pinterest lifestyle scene. Style: ${selectedVibe}. The product must be clearly visible and recognizable as the main subject. Soft natural lighting, warm tones, aspirational and inviting. Vertical composition. Absolutely no text or words anywhere in the image.`);
       formData.append('model', 'gpt-image-1');
       formData.append('size', '1024x1536');
 
       const res = await fetch('https://api.openai.com/v1/images/edits', {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${keys.openai}` },
+        headers: { 'Authorization': `Bearer ${apiKey}` },
         body: formData
       });
       return res.json();
@@ -344,9 +330,7 @@ Return ONLY valid JSON, no markdown, no backticks:
         if (result.status === 'fulfilled' && result.value.data) {
           count++;
           const imgData = result.value.data[0];
-          // gpt-image-1 returns base64
           const src = imgData.url || `data:image/png;base64,${imgData.b64_json}`;
-
           const card = document.createElement('div');
           card.className = 'card';
           card.style.marginTop = '16px';
@@ -356,13 +340,19 @@ Return ONLY valid JSON, no markdown, no backticks:
             <a href="${src}" download="golden-routine-pin-${i+1}.png" class="dl-btn" target="_blank">⬇️ Download Image ${i+1}</a>
           `;
           section.appendChild(card);
+        } else if (result.status === 'fulfilled' && result.value.error) {
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.style.marginTop = '16px';
+          card.innerHTML = `<div class="alert alert-error">❌ Image ${i+1} failed: ${result.value.error.message}</div>`;
+          section.appendChild(card);
         }
       });
 
-      if (count === 0) throw new Error('No images returned');
+      if (count === 0) throw new Error('No images were generated successfully');
 
     } catch(e) {
-      showStatus('error', '❌ Image generation failed. Make sure you have access to gpt-image-1 on your OpenAI account.');
+      showStatus('error', `❌ Image generation failed: ${e.message}`);
       resetBtn();
       return;
     }
